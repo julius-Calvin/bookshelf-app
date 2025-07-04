@@ -6,7 +6,7 @@ const addNewBook = (req, h) => {
   const id = nanoid(10);
 
   // Check if book reading is already finshed
-  const finished = readPage > pageCount? true:false;
+  const finished = readPage == pageCount? true : false;
   const insertedAt = new Date().toISOString();
   const updatedAt = insertedAt;
   const newBook = { id, name, year, author, summary, publisher, pageCount, readPage, finished, reading, insertedAt, updatedAt };
@@ -37,8 +37,6 @@ const addNewBook = (req, h) => {
     res.code(201);
     return res;
   }
-
-
 };
 
 const getAllBooks = (req, h) => {
@@ -59,23 +57,27 @@ const getAllBooks = (req, h) => {
 const getBookbyId = (req, h) => {
   const { bookId } = req.params;
   const bookById = books.find((book) => book.id === bookId);
-  const res = bookById != undefined ? h.response({
-    status: 'success',
-    data: {
-      book: bookById,
-    },
-  }).code(200) :
-    h.response({
+  if (bookById != undefined) {
+    const res = h.response({
+      status: 'success',
+      data: {
+        book: bookById
+      }
+    }).code(200);
+    return res;
+  } else {
+    const res = h.response({
       status: 'fail',
       message: 'Buku tidak ditemukan'
     }).code(404);
-  return res;
+    return res;
+  }
 };
 
 const updateBookById = (req, h) => {
-  const { id, name, year, author, summary, publisher, pageCount, readPage, reading, insertedAt } = req.payload;
-  const bookId = req.params;
-  const updatedAt = new Date().toISOString;
+  const { name, year, author, summary, publisher, pageCount, readPage, reading } = req.payload;
+  const { bookId }= req.params;
+  const updatedAt = new Date().toISOString();
 
   const bookByIdIndex = books.findIndex((book) => book.id === bookId);
   if (!name) {
@@ -92,18 +94,37 @@ const updateBookById = (req, h) => {
     return res;
   } else if (bookByIdIndex === -1) {
     const res = h.response({
-      status: 'success',
+      status: 'fail',
       message: 'Gagal memperbarui buku. Id tidak ditemukan'
     }).code(404);
     return res;
   } else {
-    books[bookByIdIndex] = { ...books[bookByIdIndex], id, name, year, author, summary, publisher, pageCount, readPage, reading, insertedAt, updatedAt };
+    books[bookByIdIndex] = { ...books[bookByIdIndex], name, year, author, summary, publisher, pageCount, readPage, reading, updatedAt };
     const res = h.response({
       status: 'success',
-      message: 'Buku berhasil diperbaiki'
+      message: 'Buku berhasil diperbarui'
     });
     return res;
   }
 };
 
-module.exports = { getAllBooks, addNewBook, getBookbyId, updateBookById };
+const deleteBookById = (req, h) => {
+  const { bookId } = req.params;
+  const bookByIdIndex = books.findIndex((book) => book.id === bookId);
+  if (bookByIdIndex !== -1) {
+    books.splice(bookByIdIndex, 1);
+    const res = h.response({
+      status: 'success',
+      message: 'Buku berhasil dihapus'
+    }).code(200);
+    return res;
+  } else {
+    const res = h.response({
+      status: 'fail',
+      message: 'Buku gagal dihapus. Id tidak ditemukan'
+    }).code(404);
+    return res;
+  }
+};
+
+module.exports = { getAllBooks, addNewBook, getBookbyId, updateBookById, deleteBookById };

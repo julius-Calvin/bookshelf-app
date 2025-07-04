@@ -40,20 +40,36 @@ const addNewBook = (req, h) => {
 };
 
 const getAllBooks = (req, h) => {
+  const { name, reading, finished } = req.query;
+  let filteredBooks = books;
+
+  if (name) {
+    filteredBooks = filteredBooks.filter((book) => book.name.toLowerCase().includes(name.toLowerCase()));
+  }
+  if (reading !== undefined) {
+    const isReading = reading === '1';
+    filteredBooks = filteredBooks.filter((book) => book.reading === isReading);
+  }
+  if (finished !== undefined) {
+    const isFinsihed = finished === '1';
+    filteredBooks = filteredBooks.filter((book) => book.finished === isFinsihed);
+  }
   const res = h.response({
     status: 'success',
     data: {
-      books: books.map((book) => ({
+      books: filteredBooks.map((book) => ({
         id: book.id,
         name: book.name,
         publisher: book.publisher,
+        finished: book.finished,
+        reading: book.reading,
       }))
     },
   });
   res.code(200);
   return res;
-
 };
+
 const getBookbyId = (req, h) => {
   const { bookId } = req.params;
   const bookById = books.find((book) => book.id === bookId);

@@ -61,8 +61,6 @@ const getAllBooks = (req, h) => {
         id: book.id,
         name: book.name,
         publisher: book.publisher,
-        finished: book.finished,
-        reading: book.reading,
       }))
     },
   });
